@@ -75,4 +75,10 @@ class Obj
 
    public:
     static Obj CreateObjModel(const std::string_view file_dir);
+
+    const std::vector<FaceElements>& GetFaceElements() { return face_elements; }
+    VertexIndices GetVertexIndicesAt(const size_t index)
+    {
+        return vertex_indices[index - 1];
+    }
 };

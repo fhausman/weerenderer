@@ -193,35 +193,37 @@ overloaded(Ts...)->overloaded<Ts...>;
 Obj Obj::CreateObjModel(const std::string_view file_dir)
 {
     Obj model;
-    auto model_visitor = overloaded{
-
-        [&model](VertexIndices& vi) {
-            model.vertex_indices.push_back(std::move(vi));
-        },
-        [&model](VertexTextureCoordinates& vt) {
-            model.vertex_texture_coordinates.push_back(std::move(vt));
-        },
-        [&model](VertexNormals& vn) {
-            model.vertex_normals.push_back(std::move(vn));
-        },
-        [&model](
-            FaceElements& f) { model.face_elements.push_back(std::move(f)); },
-        [](std::monostate) { /* Do nothing */ }
-
-    };
-
-    std::ifstream input_stream;
-    input_stream.open(file_dir.data(), std::fstream::in);
-    if (input_stream.fail()) return Obj();
-
-    for (std::string line; !input_stream.eof();)
     {
-        std::getline(input_stream, line);
-        const auto line_view = std::string_view(line);
-        const auto [identifier, tokens] = _obj::ParseLine(line_view);
+        auto model_visitor = overloaded{
 
-        auto part = _obj::CreateObjField(identifier, tokens);
-        std::visit(model_visitor, part);
+            [&model](VertexIndices& vi) {
+                model.vertex_indices.push_back(std::move(vi));
+            },
+            [&model](VertexTextureCoordinates& vt) {
+                model.vertex_texture_coordinates.push_back(std::move(vt));
+            },
+            [&model](VertexNormals& vn) {
+                model.vertex_normals.push_back(std::move(vn));
+            },
+            [&model](
+                FaceElements& f) { model.face_elements.push_back(std::move(f)); },
+            [](std::monostate) { /* Do nothing */ }
+
+        };
+
+        std::ifstream input_stream;
+        input_stream.open(file_dir.data(), std::fstream::in);
+        if (input_stream.fail()) return Obj();
+
+        for (std::string line; !input_stream.eof();)
+        {
+            std::getline(input_stream, line);
+            const auto line_view = std::string_view(line);
+            const auto[identifier, tokens] = _obj::ParseLine(line_view);
+
+            auto part = _obj::CreateObjField(identifier, tokens);
+            std::visit(model_visitor, part);
+        }
     }
 
     return model;
