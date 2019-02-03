@@ -149,7 +149,6 @@ ParseResultVariant CreateObjField(const std::string_view& identifier,
 
         auto parse_token = [&face_elements, convert, convert_opt](
                                const auto& token) {
-
             const auto elems = _obj::Split(token, '/');
             switch (elems.size())
             {
@@ -182,48 +181,50 @@ ParseResultVariant CreateObjField(const std::string_view& identifier,
 }
 }  // namespace _obj
 
-template <class... Ts>
-struct overloaded : Ts...
+struct ObjCreator
 {
-    using Ts::operator()...;
+    Obj& model;
+
+    void operator()(VertexIndices& vi)
+    {
+        model.Add(std::move(vi));
+    }
+
+    void operator()(VertexTextureCoordinates& vt)
+    {
+        model.Add(std::move(vt));
+    }
+
+    void operator()(VertexNormals& vn)
+    {
+        model.Add(std::move(vn));
+    }
+
+    void operator()(FaceElements& f)
+    {
+        model.Add(std::move(f));
+    }
+
+    void operator()(std::monostate&) { /* Do nothing */ }
 };
-template <class... Ts>
-overloaded(Ts...)->overloaded<Ts...>;
 
 Obj Obj::CreateObjModel(const std::string_view file_dir)
 {
     Obj model;
+    auto model_visitor = ObjCreator{model};
+
+    std::ifstream input_stream;
+    input_stream.open(file_dir.data(), std::fstream::in);
+    if (input_stream.fail()) return Obj();
+
+    for (std::string line; !input_stream.eof();)
     {
-        auto model_visitor = overloaded{
+        std::getline(input_stream, line);
+        const auto line_view = std::string_view(line);
+        const auto [identifier, tokens] = _obj::ParseLine(line_view);
 
-            [&model](VertexIndices& vi) {
-                model.vertex_indices.push_back(std::move(vi));
-            },
-            [&model](VertexTextureCoordinates& vt) {
-                model.vertex_texture_coordinates.push_back(std::move(vt));
-            },
-            [&model](VertexNormals& vn) {
-                model.vertex_normals.push_back(std::move(vn));
-            },
-            [&model](
-                FaceElements& f) { model.face_elements.push_back(std::move(f)); },
-            [](std::monostate) { /* Do nothing */ }
-
-        };
-
-        std::ifstream input_stream;
-        input_stream.open(file_dir.data(), std::fstream::in);
-        if (input_stream.fail()) return Obj();
-
-        for (std::string line; !input_stream.eof();)
-        {
-            std::getline(input_stream, line);
-            const auto line_view = std::string_view(line);
-            const auto[identifier, tokens] = _obj::ParseLine(line_view);
-
-            auto part = _obj::CreateObjField(identifier, tokens);
-            std::visit(model_visitor, part);
-        }
+        auto part = _obj::CreateObjField(identifier, tokens);
+        std::visit(model_visitor, part);
     }
 
     return model;

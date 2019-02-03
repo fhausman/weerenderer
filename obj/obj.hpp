@@ -73,12 +73,32 @@ class Obj
     std::vector<VertexNormals> vertex_normals;
     std::vector<FaceElements> face_elements;
 
-   public:
+public:
     static Obj CreateObjModel(const std::string_view file_dir);
 
-    const std::vector<FaceElements>& GetFaceElements() { return face_elements; }
-    VertexIndices GetVertexIndicesAt(const size_t index)
+    const std::vector<FaceElements>& GetFaceElements() const { return face_elements; }
+    VertexIndices GetVertexIndicesAt(const size_t index) const
     {
         return vertex_indices[index - 1];
+    }
+
+    void Add(VertexIndices&& vi)
+    {
+        vertex_indices.push_back(std::move(vi));
+    }
+
+    void Add(VertexTextureCoordinates&& vi)
+    {
+        vertex_texture_coordinates.push_back(std::move(vi));
+    }
+
+    void Add(VertexNormals&& vi)
+    {
+        vertex_normals.push_back(std::move(vi));
+    }
+
+    void Add(FaceElements&& vi)
+    {
+        face_elements.push_back(std::move(vi));
     }
 };
