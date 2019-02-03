@@ -34,8 +34,7 @@ int main(int argc, const char* argv[])
     const int height = 800;
     TGAImage image{width, height, TGAImage::RGB};
 
-    auto model = Obj::CreateObjModel(
-        "C:\\Projects\\Repositories\\renderer\\cmake_Vs\\Debug\\head.obj");
+    auto model = Obj::CreateObjModel("head.obj");
     auto draw_face = [&model, &image](const FaceElements& face) {
         const auto& face_coords = face.face_element_coords;
         const auto size = face_coords.size();
@@ -55,24 +54,6 @@ int main(int argc, const char* argv[])
 
     const auto& faces = model.GetFaceElements();
     std::for_each(faces.begin(), faces.end(), draw_face);
-
-    // for (int i = 0; i < model->nfaces(); i++) {
-    //    std::vector<int> face = model->face(i);
-    //    for (int j = 0; j < 3; j++) {
-    //        Vec3f v0 = model->vert(face[j]);
-    //        Vec3f v1 = model->vert(face[(j + 1) % 3]);
-    //        int x0 = (v0.x + 1.)*width / 2.;
-    //        int y0 = (v0.y + 1.)*height / 2.;
-    //        int x1 = (v1.x + 1.)*width / 2.;
-    //        int y1 = (v1.y + 1.)*height / 2.;
-    //        line(x0, y0, x1, y1, image, white);
-    //    }
-    //}
-    // TGAImage image{100, 100, TGAImage::RGB};
-
-    // draw_line(13, 20, 80, 40, image, white);
-    // draw_line(20, 13, 40, 80, image, red);
-    // draw_line(80, 40, 13, 20, image, red);
 
      image.flip_vertically();
      image.write_tga_file("output.tga");
