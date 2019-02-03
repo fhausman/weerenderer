@@ -13,8 +13,8 @@ void draw_line(const int x0, const int y0, const int x1, const int y1,
     const auto dy = std::abs(y1 - y0);
     const auto step = dx >= dy ? dx : dy;
 
-    const auto start_x = x0 < x1 ? x0 : x1;
-    const auto start_y = y0 < y1 ? y0 : y1;
+    const auto xi = x0 > x1 ? -1 : 1;
+    const auto yi = y0 > y1 ? -1 : 1;
     for (int i = 0; i < step; ++i)
     {
         const auto calculate_next = [step, i](const auto start,
@@ -22,8 +22,8 @@ void draw_line(const int x0, const int y0, const int x1, const int y1,
             return (int)(start + i * (difference / (float)(step)));
         };
 
-        const auto x = calculate_next(start_x, dx);
-        const auto y = calculate_next(start_y, dy);
+        const auto x = calculate_next(x0, dx*xi);
+        const auto y = calculate_next(y0, dy*yi);
         image.set(x, y, color);
     }
 }
