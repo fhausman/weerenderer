@@ -6,7 +6,8 @@ set(SOURCE_FILES
     img/tgaimage.cpp)
 
 set(HEADER_FILES
-    img/tgaimage.h)
+    img/tgaimage.h
+    geometry/vector.hpp)
 
 add_subdirectory(obj)
 add_executable(renderer ${SOURCE_FILES} ${HEADER_FILES})
