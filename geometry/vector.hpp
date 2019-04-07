@@ -3,7 +3,7 @@
 #include <array>
 #include <tuple>
 
-namespace geo
+namespace la
 {
 namespace vector
 {
@@ -14,6 +14,8 @@ struct VecBase
 {
     using type = T;
 
+    // const size_t size = SIZE;
+
     std::array<T, SIZE> coordinates{0};
 
     constexpr auto operator[](size_t const i) { return coordinates[i]; }
@@ -21,6 +23,18 @@ struct VecBase
     constexpr auto begin() const { return coordinates.begin(); }
 
     constexpr auto end() const { return coordinates.end(); }
+
+    template <typename Vec>
+    constexpr Vec operator+(Vec const& v)
+    {
+        auto result = Vec{};
+        for (size_t i = 0; i < SIZE; i++)
+        {
+            result[i] = coordinates[i] + v[i];
+        }
+
+        return result;
+    }
 };
 
 template <typename T, size_t SIZE = 2>
@@ -48,32 +62,32 @@ struct Vec3 : public VecBase<T, SIZE>
     constexpr T z() { return coordinates[2]; }
 };
 
-template <typename T>
-struct CoordPairIt : std::tuple<T, T>
-{
-    CoordPairIt(T const& it0, T const& it1) : std::tuple<T, T>{it0, it1} {};
-
-    constexpr CoordPairIt operator++()
-    {
-        return {++std::get<0>(*this), ++std::get<1>(*this)};
-    }
-};
-
-template <typename T>
-CoordPairIt(T const&, T const&)->CoordPairIt<T>;
-
-template <typename TVec>
-struct VecPair
-{
-    TVec const& v0;
-    TVec const& v1;
-
-    VecPair(TVec const& v0, TVec const& v1) : v0(v0), v1(v1) {}
-
-    constexpr auto begin() const { return CoordPairIt{v0.begin(), v1.begin()}; }
-
-    constexpr auto end() const { return CoordPairIt{v0.end(), v1.end()}; }
-};
+//template <typename T>
+//struct CoordPairIt : std::tuple<T, T>
+//{
+//    CoordPairIt(T const& it0, T const& it1) : std::tuple<T, T>{it0, it1} {};
+//
+//    constexpr CoordPairIt operator++()
+//    {
+//        return {++std::get<0>(*this), ++std::get<1>(*this)};
+//    }
+//};
+//
+//template <typename T>
+//CoordPairIt(T const&, T const&)->CoordPairIt<T>;
+//
+//template <typename TVec>
+//struct VecPair
+//{
+//    TVec const& v0;
+//    TVec const& v1;
+//
+//    VecPair(TVec const& v0, TVec const& v1) : v0(v0), v1(v1) {}
+//
+//    constexpr auto begin() const { return CoordPairIt{v0.begin(), v1.begin()}; }
+//
+//    constexpr auto end() const { return CoordPairIt{v0.end(), v1.end()}; }
+//};
 }  // namespace _vector
 
 template <typename T, size_t SIZE>
@@ -88,4 +102,4 @@ using Vec3i = _vector::Vec3<int>;
 using Vec3f = _vector::Vec3<float>;
 
 }  // namespace vector
-}  // namespace geo
+}  // namespace la

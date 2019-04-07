@@ -1,5 +1,6 @@
 #include "img/tgaimage.h"
 #include "obj/obj.hpp"
+#include "geometry/vector.hpp"
 
 #include <algorithm>
 #include <array>
@@ -65,6 +66,14 @@ int main(int argc, const char* argv[])
     const int width = 1600;
     const int height = 1600;
     TGAImage image{width, height, TGAImage::RGB};
+
+    using namespace geo::vector::_vector;
+
+    geo::vector::Vec2i vec{ 0, 2 }, vec1{ 1, 3 };
+
+    auto vec_p = VecPair{ geo::vector::Vec2i{0, 1}, geo::vector::Vec2i{3, 4} };
+    auto it = vec_p.begin();
+    ++it;
 
     // auto model = Obj::CreateObjModel("head.obj");
     // auto draw_face = [&model, &image](const FaceElements& face) {
