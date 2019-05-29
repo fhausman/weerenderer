@@ -39,7 +39,26 @@ int main(int argc, const char* argv[])
     const int height = 1600;
     TGAImage image{width, height, TGAImage::RGB};
 
-    draw_line({ 100, 100 }, { 1500, 1000 }, image, green);
+    auto model = Obj::CreateObjModel("head.obj");
+    auto draw_face = [&model, &image](const FaceElements& face) {
+        const auto& face_coords = face.face_element_coords;
+        const auto size = face_coords.size();
+        for (size_t i = 0; i < size; ++i)
+        {
+            const auto v0 =
+                model.GetVertexIndicesAt(face_coords[i].vertex_indices);
+            const auto v1 = model.GetVertexIndicesAt(
+                face_coords[(i + 1) % size].vertex_indices);
+            int x0 = (int)((v0.x + 1.) * image.get_width() / 2.);
+            int y0 = (int)((v0.y + 1.) * image.get_height() / 2.);
+            int x1 = (int)((v1.x + 1.) * image.get_width() / 2.);
+            int y1 = (int)((v1.y + 1.) * image.get_height() / 2.);
+            draw_line({x0, y0}, {x1, y1}, image);
+        }
+    };
+
+    const auto& faces = model.GetFaceElements();
+    std::for_each(faces.begin(), faces.end(), draw_face);
 
     image.flip_vertically();
     image.write_tga_file("output.tga");
