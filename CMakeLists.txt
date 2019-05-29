@@ -9,8 +9,7 @@ set(HEADER_FILES
     img/tgaimage.h
     hola/hola.hpp)
 
-add_subdirectory(obj)
+add_subdirectory(tinyobjloader)
 add_executable(renderer ${SOURCE_FILES} ${HEADER_FILES})
-target_link_libraries(renderer obj)
+target_link_libraries(renderer tinyobjloader)
 set_property(TARGET renderer PROPERTY CXX_STANDARD 17)
-
