@@ -14,12 +14,12 @@ using namespace hola;
 void draw_line(const vec2i& v0, const vec2i& v1, TGAImage& image,
     const TGAColor color = TGAColor{255, 255, 255, 255})
 {
-    const auto dx = std::abs(x(v1) - x(v0));
-    const auto dy = std::abs(y(v1) - y(v0));
+    const auto dx = std::abs(get_x(v1) - get_x(v0));
+    const auto dy = std::abs(get_y(v1) - get_y(v0));
     const auto steps_nr = dx >= dy ? dx : dy;
 
-    const auto xi = x(v0) > x(v1) ? -1 : 1;
-    const auto yi = y(v0) > y(v1) ? -1 : 1;
+    const auto xi = get_x(v0) > get_x(v1) ? -1 : 1;
+    const auto yi = get_y(v0) > get_y(v1) ? -1 : 1;
 
     const auto calculate_next_pixel =
         [steps_nr](const auto start, const auto difference, const auto step) {
@@ -29,8 +29,8 @@ void draw_line(const vec2i& v0, const vec2i& v1, TGAImage& image,
 
     for (size_t step = 0; step < steps_nr; ++step)
     {
-        const auto px_x = calculate_next_pixel(x(v0), dx * xi, step);
-        const auto px_y = calculate_next_pixel(y(v0), dy * yi, step);
+        const auto px_x = calculate_next_pixel(get_x(v0), dx * xi, step);
+        const auto px_y = calculate_next_pixel(get_y(v0), dy * yi, step);
         image.set(px_x, px_y, color);
     }
 }
@@ -75,8 +75,8 @@ int main(int argc, const char* argv[])
         {
             const auto v0 = get_vertex(face[fi].vertex_index);
             const auto v1 = get_vertex(face[get_next_index(fi, face_size)].vertex_index);
-            const auto p0 = vec2i{ calc_img_coord(x(v0), image.get_width()), calc_img_coord(y(v0), image.get_height())};
-            const auto p1 = vec2i{ calc_img_coord(x(v1), image.get_width()), calc_img_coord(y(v1), image.get_height())};
+            const auto p0 = vec2i{ calc_img_coord(get_x(v0), image.get_width()), calc_img_coord(get_y(v0), image.get_height())};
+            const auto p1 = vec2i{ calc_img_coord(get_x(v1), image.get_width()), calc_img_coord(get_y(v1), image.get_height())};
 
             draw_line(p0, p1, image);
         }
