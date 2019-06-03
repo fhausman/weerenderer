@@ -6,6 +6,7 @@
 using namespace hola;
 
 using BoundingBox = std::tuple<vec2i, vec2i>;
+using Triangle = std::array<vec2i, 3>;
 
 struct ScreenResolution
 {
@@ -14,7 +15,7 @@ struct ScreenResolution
 };
 
 BoundingBox get_bounding_box(
-    const std::array<vec2i, 3>& triangle, const ScreenResolution& screen)
+    const Triangle& triangle, const ScreenResolution& screen)
 {
     vec bbmax{0, 0};
     vec bbmin{screen.width, screen.height};
@@ -32,10 +33,65 @@ BoundingBox get_bounding_box(
     return {bbmin, bbmax};
 }
 
-TEST_CASE("Calculating bounding box", "[bounding box]")
+SCENARIO("Bounding box calculation", "[renderer]")
 {
-    std::array<vec2i, 3> triangle = {{{10, 10}, {30, 30}, {20, 40}}};
-    const auto bb = get_bounding_box(triangle, {1920, 1080});
+    GIVEN("triangle inside screen")
+    {
+        const Triangle triangle = {{{10, 30}, {15, 40}, {20, 20}}};
+        WHEN("calculating bounding box")
+        {
+            const auto [bbmin, bbmax] =
+                get_bounding_box(triangle, {1980, 1080});
+            THEN("bounding box should consist furthest triangle coordinates")
+            {
+                REQUIRE(bbmin == vec{10, 20});
+                REQUIRE(bbmax == vec{20, 40});
+            }
+        }
+    }
 
-    REQUIRE(BoundingBox{{10, 10}, {30, 30}} == bb);
+    GIVEN("triangle partially outside screen")
+    {
+        const Triangle triangle = { {{-10, -30}, {40, 40}, {-20, -50}} };
+        WHEN("calculating bounding box")
+        {
+            const auto[bbmin, bbmax] =
+                get_bounding_box(triangle, { 1980, 1080 });
+            THEN("bounding box should be clamped to screen resolution")
+            {
+                REQUIRE(bbmin == vec{ 0, 0 });
+                REQUIRE(bbmax == vec{ 40, 40 });
+            }
+        }
+    }
+
+    GIVEN("triangle fully outside screen")
+    {
+        const Triangle triangle = { {{-10, -30}, {-40, -100}, {-20, -50}} };
+        WHEN("calculating bounding box")
+        {
+            const auto[bbmin, bbmax] =
+                get_bounding_box(triangle, { 1980, 1080 });
+            THEN("bounding box should be zeroed")
+            {
+                REQUIRE(bbmin == vec{ 0, 0 });
+                REQUIRE(bbmax == vec{ 0, 0 });
+            }
+        }
+    }
+
+    GIVEN("triangle on the edge of screen")
+    {
+        const Triangle triangle = { {{0, 0}, {1980, 1080}, {0, 1080}} };
+        WHEN("calculating bounding box")
+        {
+            const auto[bbmin, bbmax] =
+                get_bounding_box(triangle, { 1980, 1080 });
+            THEN("bounding box should be fullscreen")
+            {
+                REQUIRE(bbmin == vec{ 0, 0 });
+                REQUIRE(bbmax == vec{ 1980, 1080 });
+            }
+        }
+    }
 }
