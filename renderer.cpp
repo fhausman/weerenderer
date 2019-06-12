@@ -8,7 +8,7 @@ BoundingBox calculate_bounding_box(const Triangle& triangle, const ScreenResolut
 
     for (const auto& vertex : triangle)
     {
-        for (size_t i = 0; i < vertex.size(); ++i)
+        for (size_t i = 0; i < vertex.size; ++i)
         {
             bbmin[i] = std::max(0, std::min(bbmin[i], vertex[i]));
             bbmax[i] = std::min(clamp[i], std::max(bbmax[i], vertex[i]));
