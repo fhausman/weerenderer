@@ -3,8 +3,8 @@
 BoundingBox calculate_bounding_box(const Triangle& triangle, const ScreenResolution& screen)
 {
     vec bbmax{ 0, 0 };
-    vec bbmin{ screen.width, screen.height };
-    vec clamp{ screen.width, screen.height };
+    vec bbmin{ screen.width - 1, screen.height - 1 };
+    vec clamp{ screen.width - 1, screen.height - 1 };
 
     for (const auto& vertex : triangle)
     {
