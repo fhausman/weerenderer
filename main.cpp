@@ -86,7 +86,7 @@ int main(int argc, const char* argv[])
 
     const auto get_vertex = [&vertices](const auto idx) {
         const auto vertex_start = idx * 3;
-        return vec2f{ vertices[vertex_start], vertices[vertex_start + 1] };
+        return vec3f{ vertices[vertex_start], vertices[vertex_start + 1], vertices[vertex_start + 2] };
     };
 
     const auto get_next_index = [](const auto face_idx, const auto face_size) {
@@ -104,6 +104,15 @@ int main(int argc, const char* argv[])
         const auto p2 = vec2i{ calc_img_coord(get_x(v2), image.get_width()), calc_img_coord(get_y(v2), image.get_height()) };
 
         return { p0, p1, p2 };
+    };
+
+    const auto light_intensity = [light_vector = vec3f{ 0,0,-1 }](const auto& v0, const auto& v1, const auto& v2)
+    {
+        const auto n = cross(v2 - v0, v1 - v0);
+        const auto l = n.norm();
+        const auto normalized = normalize(n);
+
+        return dot(light_vector, normalized);
     };
 
     const auto rand_color = []()
@@ -126,7 +135,11 @@ int main(int argc, const char* argv[])
         const auto v1 = get_vertex(face[1].vertex_index);
         const auto v2 = get_vertex(face[2].vertex_index);
 
-        draw_triangle(triangle_to_screen_coords(v0, v1, v2), image, rand_color());
+        const auto intensity = light_intensity(v0, v1, v2);
+        if (intensity > 0)
+        {
+            draw_triangle(triangle_to_screen_coords(v0, v1, v2), image, TGAColor(intensity *255, intensity * 255, intensity * 255, 255));
+        }
         indices_idx += face_size;
     }
 
