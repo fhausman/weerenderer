@@ -37,20 +37,19 @@ void draw_line(const vec2i& v0, const vec2i& v1, TGAImage& image,
     }
 }
 
-bool is_inside_triangle(const Point& p, const Triangle& triangle)
+bool is_inside_triangle(const vec3f& barycentric)
 {
-    if (auto barycentric = calculate_barycentric(p, triangle); barycentric)
-    {
-        return !(get_x(*barycentric) < 0.f ||
-            get_y(*barycentric) < 0.f ||
-            get_z(*barycentric) < 0.f);
-    }
-
-    return false;
+    return !(get_x(barycentric) < 0.f ||
+        get_y(barycentric) < 0.f ||
+        get_z(barycentric) < 0.f);
 }
 
 void draw_triangle(const Triangle& triangle, std::vector<float>& z_buffer, TGAImage& image, const TGAColor color)
 {
+    const auto buffer_idx = [&](const auto& x, const auto& y) {
+        return size_t(x + y * image.get_width());
+    };
+
     const auto bbox = calculate_bounding_box(
         triangle, {image.get_width(), image.get_height()});
 
@@ -58,10 +57,23 @@ void draw_triangle(const Triangle& triangle, std::vector<float>& z_buffer, TGAIm
     {
         for(auto y = get_y(bbox.min); y <= get_y(bbox.max); ++y)
         {
-            if (!is_inside_triangle({x,y}, triangle))
-                continue;
-
-            image.set(x, y, color);
+            const auto barycentric = calculate_barycentric({ x,y,0.f }, triangle);
+            if (barycentric)
+            {
+                if (!is_inside_triangle(*barycentric))
+                    continue;
+            
+                float z = 0.f;
+                for(size_t i = 0; i < triangle.size(); ++i)
+                {
+                    z += get_z(triangle[i])*barycentric->at(i);
+                }
+                if(z_buffer[buffer_idx(x,y)] < z)
+                {
+                    z_buffer[buffer_idx(x,y)] = z;
+                    image.set(x, y, color);
+                }
+            }
         }
     }
 }
@@ -93,18 +105,17 @@ int main(int argc, const char* argv[])
         return (face_idx + 1) % face_size;
     };
 
-    const auto calc_img_coord = [](const auto obj_coord, const auto image_dimension) {
-        return static_cast<int>((obj_coord + 1.f) * image_dimension / 2.f);
-    };
+    const auto triangle_to_screen_coords =
+        [width = image.get_width(), height = image.get_height()](const auto&... v) -> Triangle {
+        const auto calc_img_coord = [](const auto obj_coord, const auto image_dimension) {
+            return static_cast<int>((obj_coord + 1.f) * image_dimension / 2.f + .5f);
+        };
 
-    const auto triangle_to_screen_coords = [&](const auto& v0, const auto& v1, const auto& v2) -> Triangle
-    {
-        //const auto p0 = vec2i{ calc_img_coord(get_x(v0), image.get_width()), calc_img_coord(get_y(v0), image.get_height()) };
-        //const auto p1 = vec2i{ calc_img_coord(get_x(v1), image.get_width()), calc_img_coord(get_y(v1), image.get_height()) };
-        //const auto p2 = vec2i{ calc_img_coord(get_x(v2), image.get_width()), calc_img_coord(get_y(v2), image.get_height()) };
-
-        //return { p0, p1, p2 };
-        return {};
+        return {
+            vec3f{ static_cast<float>(calc_img_coord(get_x(v), width)),
+                   static_cast<float>(calc_img_coord(get_y(v), height)),
+                   get_z(v) }...
+        };
     };
 
     const auto light_intensity = [light_vector = vec3f{ 0,0,-1 }](const auto& v0, const auto& v1, const auto& v2)
@@ -141,7 +152,7 @@ int main(int argc, const char* argv[])
         if (intensity > 0)
         {
             draw_triangle(triangle_to_screen_coords(v0, v1, v2), z_buffer, image,
-                TGAColor(intensity *255, intensity * 255, intensity * 255, 255));
+                TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
         }
         indices_idx += face_size;
     }
