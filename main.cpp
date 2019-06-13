@@ -44,7 +44,25 @@ bool is_inside_triangle(const vec3f& barycentric)
         get_z(barycentric) < 0.f);
 }
 
-void draw_triangle(const Triangle& triangle, std::vector<float>& z_buffer, TGAImage& image, const TGAColor color)
+TGAColor get_color(const vec3f& barycentric, const std::array<vec2f, 3>& texture_coords, TGAImage& texture)
+{
+    const auto dx_1 = std::abs(get_x(texture_coords[1] - texture_coords[0]));
+    const auto dx_2 = std::abs(get_x(texture_coords[2] - texture_coords[0]));
+    const auto dx = dx_2 > dx_1 ? dx_2 : dx_1;
+    
+    const auto dy_1 = std::abs(get_y(texture_coords[2] - texture_coords[0]));
+    const auto dy_2 = std::abs(get_y(texture_coords[2] - texture_coords[0]));
+    const auto dy = dy_2 > dy_1 ? dy_2 : dy_1;
+
+    const auto tx = get_x(texture_coords[0]) + get_x(barycentric)*dx;
+    const auto ty = get_y(texture_coords[0]) + get_y(barycentric)*dy;
+
+    const auto x = texture.get_width() - tx * texture.get_width();
+    const auto y = texture.get_height() - ty * texture.get_height();
+    return texture.get(x, y);
+}
+
+void draw_triangle(const Triangle& triangle, const std::array<vec2f, 3>& texture_coords,  std::vector<float>& z_buffer, TGAImage& image, TGAImage& texture)
 {
     const auto buffer_idx = [&](const auto& x, const auto& y) {
         return size_t(x + y * image.get_width());
@@ -71,7 +89,7 @@ void draw_triangle(const Triangle& triangle, std::vector<float>& z_buffer, TGAIm
                 if(z_buffer[buffer_idx(x,y)] < z)
                 {
                     z_buffer[buffer_idx(x,y)] = z;
-                    image.set(x, y, color);
+                    image.set(x, y, get_color(*barycentric, texture_coords, texture));
                 }
             }
         }
@@ -81,6 +99,8 @@ void draw_triangle(const Triangle& triangle, std::vector<float>& z_buffer, TGAIm
 int main(int argc, const char* argv[])
 {
     TGAImage image{ 1600, 1600, TGAImage::RGB };
+    TGAImage texture;
+    texture.read_tga_file("african_head_diffuse.tga");
 
     auto objreader = tinyobj::ObjReader{};
     objreader.ParseFromFile("head.obj");
@@ -95,10 +115,16 @@ int main(int argc, const char* argv[])
     const auto& indices = head.mesh.indices;
     const auto& face_vertices = head.mesh.num_face_vertices;
     const auto& vertices = objreader.GetAttrib().vertices;
+    const auto& tex_coords = objreader.GetAttrib().texcoords;
 
     const auto get_vertex = [&vertices](const auto idx) {
-        const auto vertex_start = idx * 3;
-        return vec3f{ vertices[vertex_start], vertices[vertex_start + 1], vertices[vertex_start + 2] };
+        const auto start_idx = idx * 3;
+        return vec3f{ vertices[start_idx], vertices[start_idx + 1], vertices[start_idx + 2] };
+    };
+
+    const auto get_texcoords = [&tex_coords](const auto idx) {
+        const auto start_idx = idx * 2;
+        return vec2f{ tex_coords[start_idx], tex_coords[start_idx + 1]};
     };
 
     const auto get_next_index = [](const auto face_idx, const auto face_size) {
@@ -148,11 +174,14 @@ int main(int argc, const char* argv[])
         const auto v1 = get_vertex(face[1].vertex_index);
         const auto v2 = get_vertex(face[2].vertex_index);
 
+        const auto t0 = get_texcoords(face[0].texcoord_index);
+        const auto t1 = get_texcoords(face[1].texcoord_index);
+        const auto t2 = get_texcoords(face[2].texcoord_index);
+
         const auto intensity = light_intensity(v0, v1, v2);
         if (intensity > 0)
         {
-            draw_triangle(triangle_to_screen_coords(v0, v1, v2), z_buffer, image,
-                TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
+            draw_triangle(triangle_to_screen_coords(v0, v1, v2), {t0, t1, t2}, z_buffer, image, texture);
         }
         indices_idx += face_size;
     }
