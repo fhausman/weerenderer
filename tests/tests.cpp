@@ -8,60 +8,60 @@ SCENARIO("Bounding box calculation", "[renderer]")
 {
     GIVEN("triangle inside screen")
     {
-        const Triangle triangle = {{{10, 30}, {15, 40}, {20, 20}}};
+        const Triangle triangle = {{{10.f, 30.f}, {15.f, 40.f}, {20.f, 20.f}}};
         WHEN("calculating bounding box")
         {
             auto [bbmin, bbmax] =
-                calculate_bounding_box(triangle, {1980, 1080});
+                calculate_bounding_box(triangle, {1920, 1080});
             THEN("bounding box should consist furthest triangle coordinates")
             {
-                REQUIRE(bbmin == vec{10, 20});
-                REQUIRE(bbmax == vec{20, 40});
+                REQUIRE(bbmin == vec2f{10.f, 20.f});
+                REQUIRE(bbmax == vec2f{20.f, 40.f});
             }
         }
     }
 
     GIVEN("triangle partially outside screen")
     {
-        const Triangle triangle = {{{-10, -30}, {40, 40}, {-20, -50}}};
+        const Triangle triangle = {{{-10.f, -30.f}, {40.f, 40.f}, {-20.f, -50.f}}};
         WHEN("calculating bounding box")
         {
             auto [bbmin, bbmax] =
-                calculate_bounding_box(triangle, {1980, 1080});
+                calculate_bounding_box(triangle, {1920, 1080});
             THEN("bounding box should be clamped to screen resolution")
             {
-                REQUIRE(bbmin == vec{0, 0});
-                REQUIRE(bbmax == vec{40, 40});
+                REQUIRE(bbmin == vec2f{0.f, 0.f});
+                REQUIRE(bbmax == vec2f{40.f, 40.f});
             }
         }
     }
 
     GIVEN("triangle fully outside screen")
     {
-        const Triangle triangle = {{{-10, -30}, {-40, -100}, {-20, -50}}};
+        const Triangle triangle = {{{-10.f, -30.f}, {-40.f, -100.f}, {-20.f, -50.f}}};
         WHEN("calculating bounding box")
         {
             auto [bbmin, bbmax] =
-                calculate_bounding_box(triangle, {1980, 1080});
+                calculate_bounding_box(triangle, {1920, 1080});
             THEN("bounding box should be zeroed")
             {
-                REQUIRE(bbmin == vec{0, 0});
-                REQUIRE(bbmax == vec{0, 0});
+                REQUIRE(bbmin == vec2f{0.f, 0.f});
+                REQUIRE(bbmax == vec2f{0.f, 0.f});
             }
         }
     }
 
     GIVEN("triangle on the edge of screen")
     {
-        const Triangle triangle = {{{0, 0}, {1980, 1080}, {0, 1080}}};
+        const Triangle triangle = {{{0.f, 0.f}, {1920.f, 1080.f}, {0.f, 1080.f}}};
         WHEN("calculating bounding box")
         {
             auto [bbmin, bbmax] =
-                calculate_bounding_box(triangle, {1980, 1080});
-            THEN("bounding box should be fullscreen")
+                calculate_bounding_box(triangle, {1920, 1080});
+            THEN("bounding box should be fullscreen (max is -1)")
             {
-                REQUIRE(bbmin == vec{0, 0});
-                REQUIRE(bbmax == vec{1980, 1080});
+                REQUIRE(bbmin == vec{0.f, 0.f});
+                REQUIRE(bbmax == vec{1919.f, 1079.f});
             }
         }
     }
@@ -71,12 +71,12 @@ SCENARIO("Calculating point barycentric coordinates in relation to triangle", "[
 {
     GIVEN("non-degenerate triangle")
     {
-        const Triangle triangle = {{{10,10}, {50,10}, {30,50}}};
+        const Triangle triangle = {{{10.f,10.f}, {50.f,10.f}, {30.f,50.f}}};
         WHEN("P is point on one of the triangle vertices")
         {
-            const Point p1{ 10,10 };
-            const Point p2{ 50,10 };
-            const Point p3{ 30,50 };
+            const Point p1{ 10.f,10.f };
+            const Point p2{ 50.f,10.f };
+            const Point p3{ 30.f,50.f };
 
             const auto bar1 = calculate_barycentric(p1, triangle);
             const auto bar2 = calculate_barycentric(p2, triangle);
@@ -91,7 +91,7 @@ SCENARIO("Calculating point barycentric coordinates in relation to triangle", "[
 
         WHEN("P is inside triangle")
         {
-            const Point p{ 30, 10 };
+            const Point p{ 30.f, 10.f };
 
             const auto bar = *calculate_barycentric(p, triangle);
             THEN("all barycentric coords are positive")
@@ -104,7 +104,7 @@ SCENARIO("Calculating point barycentric coordinates in relation to triangle", "[
 
         WHEN("P is outside triangle")
         {
-            const Point p{ 100, 100 };
+            const Point p{ 100.f, 100.f };
 
             const auto bar = *calculate_barycentric(p, triangle);
             THEN("one of barycentric coords is negative")

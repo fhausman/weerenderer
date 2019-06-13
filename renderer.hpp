@@ -5,8 +5,8 @@
 
 using namespace hola;
 
-using Triangle = std::array<vec2i, 3>;
-using Point = vec2i;
+using Triangle = std::array<vec3f, 3>;
+using Point = vec3f;
 
 struct ScreenResolution
 {
@@ -16,8 +16,8 @@ struct ScreenResolution
 
 struct BoundingBox
 {
-    vec2i min;
-    vec2i max;
+    vec2f min;
+    vec2f max;
 };
 
 BoundingBox calculate_bounding_box(const Triangle& triangle, const ScreenResolution& screen);

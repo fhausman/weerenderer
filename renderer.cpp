@@ -2,15 +2,15 @@
 
 BoundingBox calculate_bounding_box(const Triangle& triangle, const ScreenResolution& screen)
 {
-    vec bbmax{ 0, 0 };
-    vec bbmin{ screen.width - 1, screen.height - 1 };
-    vec clamp{ screen.width - 1, screen.height - 1 };
+    vec2f bbmax{ 0.f, 0.f };
+    vec2f bbmin{ static_cast<float>(screen.width - 1), static_cast<float>(screen.height - 1) };
+    vec2f clamp{ static_cast<float>(screen.width - 1), static_cast<float>(screen.height - 1) };
 
     for (const auto& vertex : triangle)
     {
-        for (size_t i = 0; i < vertex.size; ++i)
+        for (size_t i = 0; i < vec2f::size; ++i)
         {
-            bbmin[i] = std::max(0, std::min(bbmin[i], vertex[i]));
+            bbmin[i] = std::max(0.f, std::min(bbmin[i], vertex[i]));
             bbmax[i] = std::min(clamp[i], std::max(bbmax[i], vertex[i]));
         }
     }
@@ -23,8 +23,8 @@ std::optional<vec3f> calculate_barycentric(const Point& p, const Triangle& trian
     const auto is_degenerate = [](const auto& u) { return std::abs(get_z(u)) < 0; };
 
     const auto&[a, b, c] = triangle;
-    const vec3f x_part = convert_to<vec3f>(vec3i{ get_x(c) - get_x(a), get_x(b) - get_x(a), get_x(a) - get_x(p) });
-    const vec3f y_part = convert_to<vec3f>(vec3i{ get_y(c) - get_y(a), get_y(b) - get_y(a), get_y(a) - get_y(p) });
+    const vec3f x_part = convert_to<vec3f>(vec3f{ get_x(c) - get_x(a), get_x(b) - get_x(a), get_x(a) - get_x(p) });
+    const vec3f y_part = convert_to<vec3f>(vec3f{ get_y(c) - get_y(a), get_y(b) - get_y(a), get_y(a) - get_y(p) });
     const auto u = cross(x_part, y_part);
 
     if (is_degenerate(u))

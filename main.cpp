@@ -49,14 +49,14 @@ bool is_inside_triangle(const Point& p, const Triangle& triangle)
     return false;
 }
 
-void draw_triangle(const Triangle& triangle, TGAImage& image, const TGAColor color)
+void draw_triangle(const Triangle& triangle, std::vector<float>& z_buffer, TGAImage& image, const TGAColor color)
 {
     const auto bbox = calculate_bounding_box(
         triangle, {image.get_width(), image.get_height()});
 
-    for (int x = get_x(bbox.min); x <= get_x(bbox.max); ++x)
+    for (auto x = get_x(bbox.min); x <= get_x(bbox.max); ++x)
     {
-        for(int y = get_y(bbox.min); y <= get_y(bbox.max); ++y)
+        for(auto y = get_y(bbox.min); y <= get_y(bbox.max); ++y)
         {
             if (!is_inside_triangle({x,y}, triangle))
                 continue;
@@ -99,11 +99,12 @@ int main(int argc, const char* argv[])
 
     const auto triangle_to_screen_coords = [&](const auto& v0, const auto& v1, const auto& v2) -> Triangle
     {
-        const auto p0 = vec2i{ calc_img_coord(get_x(v0), image.get_width()), calc_img_coord(get_y(v0), image.get_height()) };
-        const auto p1 = vec2i{ calc_img_coord(get_x(v1), image.get_width()), calc_img_coord(get_y(v1), image.get_height()) };
-        const auto p2 = vec2i{ calc_img_coord(get_x(v2), image.get_width()), calc_img_coord(get_y(v2), image.get_height()) };
+        //const auto p0 = vec2i{ calc_img_coord(get_x(v0), image.get_width()), calc_img_coord(get_y(v0), image.get_height()) };
+        //const auto p1 = vec2i{ calc_img_coord(get_x(v1), image.get_width()), calc_img_coord(get_y(v1), image.get_height()) };
+        //const auto p2 = vec2i{ calc_img_coord(get_x(v2), image.get_width()), calc_img_coord(get_y(v2), image.get_height()) };
 
-        return { p0, p1, p2 };
+        //return { p0, p1, p2 };
+        return {};
     };
 
     const auto light_intensity = [light_vector = vec3f{ 0,0,-1 }](const auto& v0, const auto& v1, const auto& v2)
@@ -121,16 +122,17 @@ int main(int argc, const char* argv[])
     };
 
     size_t indices_idx = 0;
+    std::vector<float> z_buffer(image.get_width()*image.get_height(), -std::numeric_limits<float>::max());
     for (size_t i = 0; i < face_vertices.size(); ++i)
     {
         const auto face_size = face_vertices[i];
-        const auto face = std::vector<tinyobj::index_t>(indices.begin() + indices_idx, indices.begin() + indices_idx + face_size);
         if (face_size != 3)
         {
             std::cerr << "Invalid obj file (face not triangle), aborting...";
             return -1;
         }
 
+        const auto face = indices.begin() + indices_idx;
         const auto v0 = get_vertex(face[0].vertex_index);
         const auto v1 = get_vertex(face[1].vertex_index);
         const auto v2 = get_vertex(face[2].vertex_index);
@@ -138,7 +140,8 @@ int main(int argc, const char* argv[])
         const auto intensity = light_intensity(v0, v1, v2);
         if (intensity > 0)
         {
-            draw_triangle(triangle_to_screen_coords(v0, v1, v2), image, TGAColor(intensity *255, intensity * 255, intensity * 255, 255));
+            draw_triangle(triangle_to_screen_coords(v0, v1, v2), z_buffer, image,
+                TGAColor(intensity *255, intensity * 255, intensity * 255, 255));
         }
         indices_idx += face_size;
     }
