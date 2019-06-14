@@ -4,12 +4,6 @@
 #include "hola/hola.hpp"
 
 #include <iostream>
-#include <cstdlib>
-
-const TGAColor white = TGAColor(255, 255, 255, 255);
-const TGAColor red = TGAColor(255, 0, 0, 255);
-const TGAColor green = TGAColor(0, 255, 0, 255);
-const TGAColor blue = TGAColor(0, 0, 255, 255);
 
 using namespace hola;
 
@@ -117,11 +111,6 @@ int main(int argc, const char* argv[])
         const auto normalized = normalize(n);
 
         return dot(light_vector, normalized);
-    };
-
-    const auto rand_color = []()
-    {
-        return TGAColor(rand() % 255, rand() % 255, rand() % 255, 255);
     };
 
     size_t indices_idx = 0;
