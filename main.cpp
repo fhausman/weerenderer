@@ -7,11 +7,21 @@
 
 using namespace hola;
 
+struct ImageReader
+{
+    const char* img_name;
+
+    void operator()(TGAImage& image)
+    {
+        image.read_tga_file(img_name);
+    }
+};
+
 int main(int argc, const char* argv[])
 {
-    TGAImage image{ 1600, 1600, TGAImage::RGB };
-    TGAImage texture;
-    texture.read_tga_file("african_head_diffuse.tga");
+    Image image = TGAImage{ 1600, 1600, TGAImage::RGB };
+    Image texture = TGAImage{};
+    std::visit(ImageReader{ "african_head_diffuse.tga" }, texture);
 
     auto objreader = tinyobj::ObjReader{};
     objreader.ParseFromFile("head.obj");
