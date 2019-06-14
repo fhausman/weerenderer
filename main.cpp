@@ -121,10 +121,6 @@ int main(int argc, const char* argv[])
         return vec2f{ tex_coords[start_idx], tex_coords[start_idx + 1]};
     };
 
-    const auto get_next_index = [](const auto face_idx, const auto face_size) {
-        return (face_idx + 1) % face_size;
-    };
-
     const auto triangle_to_screen_coords =
         [width = image.get_width(), height = image.get_height()](const auto&... v) -> Triangle {
         const auto calc_img_coord = [](const auto obj_coord, const auto image_dimension) {
