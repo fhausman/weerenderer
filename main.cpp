@@ -13,30 +13,6 @@ const TGAColor blue = TGAColor(0, 0, 255, 255);
 
 using namespace hola;
 
-void draw_line(const vec2i& v0, const vec2i& v1, TGAImage& image,
-    const TGAColor color = TGAColor{ 255, 255, 255, 255 })
-{
-    const auto dx = std::abs(get_x(v1) - get_x(v0));
-    const auto dy = std::abs(get_y(v1) - get_y(v0));
-    const auto steps_nr = dx >= dy ? dx : dy;
-
-    const auto xi = get_x(v0) > get_x(v1) ? -1 : 1;
-    const auto yi = get_y(v0) > get_y(v1) ? -1 : 1;
-
-    const auto calculate_next_pixel =
-        [steps_nr](const auto start, const auto difference, const auto step) {
-        return static_cast<int>(
-            start + step * (difference / static_cast<float>(steps_nr)));
-    };
-
-    for (int step = 0; step < steps_nr; ++step)
-    {
-        const auto px_x = calculate_next_pixel(get_x(v0), dx * xi, step);
-        const auto px_y = calculate_next_pixel(get_y(v0), dy * yi, step);
-        image.set(px_x, px_y, color);
-    }
-}
-
 bool is_inside_triangle(const vec3f& barycentric)
 {
     return !(get_x(barycentric) < 0.f ||
