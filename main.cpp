@@ -46,17 +46,17 @@ bool is_inside_triangle(const vec3f& barycentric)
 
 TGAColor get_color(const vec3f& barycentric, const std::array<vec2f, 3>& texture_coords, TGAImage& texture)
 {
-    const auto puv =
+    const auto p_uv =
         texture_coords[0]*barycentric[0] +
         texture_coords[1]*barycentric[1] +
         texture_coords[2]*barycentric[2];
 
-    const auto tex_x = texture.get_width() - get_x(puv)*texture.get_width();
-    const auto tex_y = texture.get_height() - get_y(puv)*texture.get_height();
+    const auto tex_x = texture.get_width() - get_x(p_uv)*texture.get_width();
+    const auto tex_y = texture.get_height() - get_y(p_uv)*texture.get_height();
     return texture.get(tex_x, tex_y);
 }
 
-void draw_triangle(const Triangle& triangle, const std::array<vec2f, 3>& texture_coords,  std::vector<float>& z_buffer, TGAImage& image, TGAImage& texture)
+void draw_triangle(const Triangle& triangle, const std::array<vec2f, 3>& texture_coords, const float_t intensity, std::vector<float>& z_buffer, TGAImage& image, TGAImage& texture)
 {
     const auto buffer_idx = [&](const auto& x, const auto& y) {
         return size_t(x + y * image.get_width());
@@ -83,7 +83,7 @@ void draw_triangle(const Triangle& triangle, const std::array<vec2f, 3>& texture
                 if(z_buffer[buffer_idx(x,y)] < z)
                 {
                     z_buffer[buffer_idx(x,y)] = z;
-                    image.set(x, y, get_color(*barycentric, texture_coords, texture));
+                    image.set(x, y, get_color(*barycentric, texture_coords, texture)*intensity);
                 }
             }
         }
@@ -175,7 +175,8 @@ int main(int argc, const char* argv[])
         const auto intensity = light_intensity(v0, v1, v2);
         if (intensity > 0)
         {
-            draw_triangle(triangle_to_screen_coords(v0, v1, v2), {t0, t1, t2}, z_buffer, image, texture);
+            draw_triangle(triangle_to_screen_coords(v0, v1, v2),
+                {t0, t1, t2}, intensity, z_buffer, image, texture);
         }
         indices_idx += face_size;
     }
