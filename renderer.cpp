@@ -74,3 +74,57 @@ void draw_line(const vec2i& v0, const vec2i& v1, Image& image, const Color& colo
     }
 }
 
+bool is_inside_triangle(const vec3f& barycentric)
+{
+    return !(get_x(barycentric) < 0.f ||
+        get_y(barycentric) < 0.f ||
+        get_z(barycentric) < 0.f);
+}
+
+TGAColor get_color(const vec3f& barycentric, const std::array<vec2f, 3>& texture_coords, TGAImage& texture)
+{
+    const auto p_uv =
+        texture_coords[0]*barycentric[0] +
+        texture_coords[1]*barycentric[1] +
+        texture_coords[2]*barycentric[2];
+
+    const auto tex_x = texture.get_width() - get_x(p_uv)*texture.get_width();
+    const auto tex_y = texture.get_height() - get_y(p_uv)*texture.get_height();
+    return texture.get(tex_x, tex_y);
+}
+
+void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, std::vector<float>& z_buffer, TGAImage& image, TGAImage& texture)
+{
+    const auto buffer_idx = [&](const auto& x, const auto& y) {
+        return size_t(x + y * image.get_width());
+    };
+
+    const auto bbox = calculate_bounding_box(
+        triangle, {image.get_width(), image.get_height()});
+
+    for (auto x = get_x(bbox.min); x <= get_x(bbox.max); ++x)
+    {
+        for(auto y = get_y(bbox.min); y <= get_y(bbox.max); ++y)
+        {
+            const auto barycentric = calculate_barycentric({ x,y,0.f }, triangle);
+            if (barycentric)
+            {
+                if (!is_inside_triangle(*barycentric))
+                    continue;
+
+                float z = 0.f;
+                for(size_t i = 0; i < triangle.size(); ++i)
+                {
+                    z += get_z(triangle[i])*barycentric->at(i);
+                }
+                if(z_buffer[buffer_idx(x,y)] < z)
+                {
+                    z_buffer[buffer_idx(x,y)] = z;
+                    image.set(x, y, get_color(*barycentric, texture_coords, texture)*intensity);
+                }
+            }
+        }
+    }
+}
+
+
