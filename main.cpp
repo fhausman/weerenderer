@@ -46,20 +46,14 @@ bool is_inside_triangle(const vec3f& barycentric)
 
 TGAColor get_color(const vec3f& barycentric, const std::array<vec2f, 3>& texture_coords, TGAImage& texture)
 {
-    const auto dx_1 = std::abs(get_x(texture_coords[1] - texture_coords[0]));
-    const auto dx_2 = std::abs(get_x(texture_coords[2] - texture_coords[0]));
-    const auto dx = dx_2 > dx_1 ? dx_2 : dx_1;
-    
-    const auto dy_1 = std::abs(get_y(texture_coords[2] - texture_coords[0]));
-    const auto dy_2 = std::abs(get_y(texture_coords[2] - texture_coords[0]));
-    const auto dy = dy_2 > dy_1 ? dy_2 : dy_1;
+    const auto puv =
+        texture_coords[0]*barycentric[0] +
+        texture_coords[1]*barycentric[1] +
+        texture_coords[2]*barycentric[2];
 
-    const auto tx = get_x(texture_coords[0]) + get_x(barycentric)*dx;
-    const auto ty = get_y(texture_coords[0]) + get_y(barycentric)*dy;
-
-    const auto x = texture.get_width() - tx * texture.get_width();
-    const auto y = texture.get_height() - ty * texture.get_height();
-    return texture.get(x, y);
+    const auto tex_x = texture.get_width() - get_x(puv)*texture.get_width();
+    const auto tex_y = texture.get_height() - get_y(puv)*texture.get_height();
+    return texture.get(tex_x, tex_y);
 }
 
 void draw_triangle(const Triangle& triangle, const std::array<vec2f, 3>& texture_coords,  std::vector<float>& z_buffer, TGAImage& image, TGAImage& texture)
