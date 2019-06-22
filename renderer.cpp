@@ -109,8 +109,8 @@ Color get_color(const vec3f& barycentric, const TexCoords& texture_coords, Image
         texture_coords[1]*barycentric[1] +
         texture_coords[2]*barycentric[2];
 
-    const int tex_x = tex_size.width - get_x(p_uv)*tex_size.width;
-    const int tex_y = tex_size.height - get_y(p_uv)*tex_size.height;
+    const int tex_x = static_cast<int>(tex_size.width - get_x(p_uv)*tex_size.width);
+    const int tex_y = static_cast<int>(tex_size.height - get_y(p_uv)*tex_size.height);
     return std::visit(renderer_::GetPixelColor{tex_x, tex_y}, texture);
 }
 
@@ -142,7 +142,14 @@ void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, co
                 if(z_buffer[buffer_idx(x,y)] < z)
                 {
                     z_buffer[buffer_idx(x,y)] = z;
-                    std::visit(renderer_::SetPixel{ x, y, get_color(*barycentric, texture_coords, texture), intensity}, image);
+                    std::visit(
+                        renderer_::SetPixel{
+                            static_cast<int>(x),
+                            static_cast<int>(y),
+                            get_color(*barycentric, texture_coords, texture),
+                            intensity
+                        },
+                        image);
                 }
             }
         }

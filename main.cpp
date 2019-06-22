@@ -17,9 +17,28 @@ struct ImageReader
     }
 };
 
+struct ImageWriter
+{
+    const char* out_name;
+
+    void operator()(TGAImage& image)
+    {
+        image.flip_vertically();
+        image.write_tga_file(out_name);
+    }
+};
+
+struct ImageSize
+{
+    std::tuple<size_t, size_t> operator()(TGAImage& image)
+    {
+        return { image.get_width(), image.get_height() };
+    }
+};
+
 int main(int argc, const char* argv[])
 {
-    Image image = TGAImage{ 1600, 1600, TGAImage::RGB };
+    Image out_image = TGAImage{ 1600, 1600, TGAImage::RGB };
     Image texture = TGAImage{};
     std::visit(ImageReader{ "african_head_diffuse.tga" }, texture);
 
@@ -48,8 +67,9 @@ int main(int argc, const char* argv[])
         return vec2f{ tex_coords[start_idx], tex_coords[start_idx + 1]};
     };
 
+    const auto[width, height] = std::visit(ImageSize{}, out_image);
     const auto triangle_to_screen_coords =
-        [width = image.get_width(), height = image.get_height()](const auto&... v) -> Triangle {
+        [width, height](const auto&... v) -> Triangle {
         const auto calc_img_coord = [](const auto obj_coord, const auto image_dimension) {
             return static_cast<int>((obj_coord + 1.f) * image_dimension / 2.f + .5f);
         };
@@ -71,7 +91,7 @@ int main(int argc, const char* argv[])
     };
 
     size_t indices_idx = 0;
-    std::vector<float> z_buffer(image.get_width()*image.get_height(), -std::numeric_limits<float>::max());
+    std::vector<float> z_buffer(width*height, -std::numeric_limits<float>::max());
     for (size_t i = 0; i < face_vertices.size(); ++i)
     {
         const auto face_size = face_vertices[i];
@@ -94,13 +114,12 @@ int main(int argc, const char* argv[])
         if (intensity > 0)
         {
             draw_triangle(triangle_to_screen_coords(v0, v1, v2),
-                {t0, t1, t2}, intensity, z_buffer, image, texture);
+                {t0, t1, t2}, intensity, z_buffer, out_image, texture);
         }
         indices_idx += face_size;
     }
 
-    image.flip_vertically();
-    image.write_tga_file("output.tga");
+    std::visit(ImageWriter{ "output.tga" }, out_image);
 
     return 0;
 }
