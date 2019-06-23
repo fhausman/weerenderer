@@ -23,8 +23,8 @@ std::optional<vec3f> calculate_barycentric(const Point& p, const Triangle& trian
     const auto is_degenerate = [](const auto& u) { return std::abs(get_z(u)) < 0; };
 
     const auto&[a, b, c] = triangle;
-    const vec3f x_part = convert_to<vec3f>(vec3f{ get_x(c) - get_x(a), get_x(b) - get_x(a), get_x(a) - get_x(p) });
-    const vec3f y_part = convert_to<vec3f>(vec3f{ get_y(c) - get_y(a), get_y(b) - get_y(a), get_y(a) - get_y(p) });
+    const vec3f x_part = vec3f{ get_x(c) - get_x(a), get_x(b) - get_x(a), get_x(a) - get_x(p) };
+    const vec3f y_part = vec3f{ get_y(c) - get_y(a), get_y(b) - get_y(a), get_y(a) - get_y(p) };
     const auto u = cross(x_part, y_part);
 
     if (is_degenerate(u))
