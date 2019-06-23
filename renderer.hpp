@@ -10,7 +10,8 @@
 using namespace hola;
 
 using Triangle = std::array<vec3f, 3>;
-using TexCoords = const std::array<vec2f, 3>;
+using TexCoords = std::array<vec2f, 3>;
+using ZBuffer = std::vector<float_t>;
 using Point = vec3f;
 
 struct BoundingBox
@@ -25,4 +26,4 @@ std::optional<vec3f> calculate_barycentric(const Point& p, const Triangle& trian
 
 void draw_line(const vec2i& v0, const vec2i& v1, Image& image, const Color& color);
 
-void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, std::vector<float>& z_buffer, Image& image, Image& texture);
+void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, ZBuffer& z_buffer, Image& image, Image& texture);

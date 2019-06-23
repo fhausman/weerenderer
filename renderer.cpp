@@ -1,32 +1,5 @@
 #include "renderer.hpp"
 
-namespace renderer_
-{
-struct SetPixel
-{
-    const int x;
-    const int y;
-    const Color& color;
-    const float intensity = 1;
-
-    void operator()(TGAImage& image)
-    {
-        image.set(x, y, std::get<TGAColor>(color)*intensity);
-    }
-};
-
-struct GetPixelColor
-{
-    const int x;
-    const int y;
-
-    Color operator()(TGAImage& image)
-    {
-        return image.get(x, y);
-    }
-};
-}
-
 BoundingBox calculate_bounding_box(const Triangle& triangle, const Width width, const Height height)
 {
     vec2f bbmax{ 0.f, 0.f };
@@ -82,7 +55,7 @@ void draw_line(const vec2i& v0, const vec2i& v1, Image& image, const Color& colo
     {
         const auto px_x = calculate_next_pixel(get_x(v0), dx * xi, step);
         const auto px_y = calculate_next_pixel(get_y(v0), dy * yi, step);
-        std::visit(renderer_::SetPixel{px_x, px_y, color}, image);
+        set_pixel(image, px_x, px_y, 1.0f, color);
     }
 }
 
@@ -103,10 +76,10 @@ Color get_color(const vec3f& barycentric, const TexCoords& texture_coords, Image
 
     const int tex_x = static_cast<int>(width - get_x(p_uv)*width);
     const int tex_y = static_cast<int>(height - get_y(p_uv)*height);
-    return std::visit(renderer_::GetPixelColor{tex_x, tex_y}, texture);
+    return get_pixel(texture, tex_x, tex_y);
 }
 
-void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, std::vector<float>& z_buffer, Image& image, Image& texture)
+void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, ZBuffer& z_buffer, Image& image, Image& texture)
 {
     const auto[width, height] = get_image_size(image);
     const auto buffer_idx = [&](const auto& x, const auto& y) {
@@ -132,14 +105,11 @@ void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, co
                 if(z_buffer[buffer_idx(x,y)] < z)
                 {
                     z_buffer[buffer_idx(x,y)] = z;
-                    std::visit(
-                        renderer_::SetPixel{
-                            static_cast<int>(x),
-                            static_cast<int>(y),
-                            get_color(*barycentric, texture_coords, texture),
-                            intensity
-                        },
-                        image);
+                    set_pixel(image,
+                        static_cast<int32_t>(x),
+                        static_cast<int32_t>(y),
+                        intensity,
+                        get_color(*barycentric, texture_coords, texture));
                 }
             }
         }

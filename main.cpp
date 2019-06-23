@@ -55,7 +55,6 @@ int main(int argc, const char* argv[])
     const auto light_intensity = [light_vector = vec3f{ 0,0,-1 }](const auto& v0, const auto& v1, const auto& v2)
     {
         const auto n = cross(v2 - v0, v1 - v0);
-        const auto l = n.norm();
         const auto normalized = normalize(n);
 
         return dot(light_vector, normalized);
