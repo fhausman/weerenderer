@@ -11,7 +11,7 @@ struct SetPixel
 
     void operator()(TGAImage& image)
     {
-        image.set(x, y, std::get<TGAColor>(color));
+        image.set(x, y, std::get<TGAColor>(color)*intensity);
     }
 };
 
@@ -25,21 +25,13 @@ struct GetPixelColor
         return image.get(x, y);
     }
 };
-
-struct ImageSize
-{
-    ImageResolution operator()(TGAImage& image)
-    {
-        return { image.get_width(), image.get_height() };
-    }
-};
 }
 
-BoundingBox calculate_bounding_box(const Triangle& triangle, const ImageResolution& screen)
+BoundingBox calculate_bounding_box(const Triangle& triangle, const Width width, const Height height)
 {
     vec2f bbmax{ 0.f, 0.f };
-    vec2f bbmin{ static_cast<float>(screen.width - 1), static_cast<float>(screen.height - 1) };
-    vec2f clamp{ static_cast<float>(screen.width - 1), static_cast<float>(screen.height - 1) };
+    vec2f bbmin{ static_cast<float>(width - 1), static_cast<float>(height - 1) };
+    vec2f clamp{ static_cast<float>(width - 1), static_cast<float>(height - 1) };
 
     for (const auto& vertex : triangle)
     {
@@ -103,27 +95,25 @@ bool is_inside_triangle(const vec3f& barycentric)
 
 Color get_color(const vec3f& barycentric, const TexCoords& texture_coords, Image& texture)
 {
-    const auto tex_size = std::visit(renderer_::ImageSize{}, texture);
+    const auto [width, height] = get_image_size(texture);
     const auto p_uv =
         texture_coords[0]*barycentric[0] +
         texture_coords[1]*barycentric[1] +
         texture_coords[2]*barycentric[2];
 
-    const int tex_x = static_cast<int>(tex_size.width - get_x(p_uv)*tex_size.width);
-    const int tex_y = static_cast<int>(tex_size.height - get_y(p_uv)*tex_size.height);
+    const int tex_x = static_cast<int>(width - get_x(p_uv)*width);
+    const int tex_y = static_cast<int>(height - get_y(p_uv)*height);
     return std::visit(renderer_::GetPixelColor{tex_x, tex_y}, texture);
 }
 
 void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, std::vector<float>& z_buffer, Image& image, Image& texture)
 {
-    const auto img_size = std::visit(renderer_::ImageSize{}, image);
+    const auto[width, height] = get_image_size(image);
     const auto buffer_idx = [&](const auto& x, const auto& y) {
-        return size_t(x + y * img_size.width);
+        return size_t(x + y * width);
     };
 
-    const auto bbox = calculate_bounding_box(
-        triangle, {img_size.width, img_size.height});
-
+    const auto bbox = calculate_bounding_box(triangle, width, height);
     for (auto x = get_x(bbox.min); x <= get_x(bbox.max); ++x)
     {
         for(auto y = get_y(bbox.min); y <= get_y(bbox.max); ++y)
