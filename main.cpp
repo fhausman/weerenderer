@@ -1,4 +1,5 @@
 #include "renderer.hpp"
+#include "img.hpp"
 #include "img/tgaimage.h"
 #include "tinyobjloader/tiny_obj_loader.h"
 #include "hola/hola.hpp"
@@ -7,40 +8,10 @@
 
 using namespace hola;
 
-struct ImageReader
-{
-    const char* img_name;
-
-    void operator()(TGAImage& image)
-    {
-        image.read_tga_file(img_name);
-    }
-};
-
-struct ImageWriter
-{
-    const char* out_name;
-
-    void operator()(TGAImage& image)
-    {
-        image.flip_vertically();
-        image.write_tga_file(out_name);
-    }
-};
-
-struct ImageSize
-{
-    std::tuple<size_t, size_t> operator()(TGAImage& image)
-    {
-        return { image.get_width(), image.get_height() };
-    }
-};
-
 int main(int argc, const char* argv[])
 {
     Image out_image = TGAImage{ 1600, 1600, TGAImage::RGB };
-    Image texture = TGAImage{};
-    std::visit(ImageReader{ "african_head_diffuse.tga" }, texture);
+    Image texture = read_image("african_head_diffuse.tga");
 
     auto objreader = tinyobj::ObjReader{};
     objreader.ParseFromFile("head.obj");
@@ -67,7 +38,7 @@ int main(int argc, const char* argv[])
         return vec2f{ tex_coords[start_idx], tex_coords[start_idx + 1]};
     };
 
-    const auto[width, height] = std::visit(ImageSize{}, out_image);
+    const auto[width, height] = get_image_size(out_image);
     const auto triangle_to_screen_coords =
         [width, height](const auto&... v) -> Triangle {
         const auto calc_img_coord = [](const auto obj_coord, const auto image_dimension) {
@@ -84,7 +55,6 @@ int main(int argc, const char* argv[])
     const auto light_intensity = [light_vector = vec3f{ 0,0,-1 }](const auto& v0, const auto& v1, const auto& v2)
     {
         const auto n = cross(v2 - v0, v1 - v0);
-        const auto l = n.norm();
         const auto normalized = normalize(n);
 
         return dot(light_vector, normalized);
@@ -119,7 +89,7 @@ int main(int argc, const char* argv[])
         indices_idx += face_size;
     }
 
-    std::visit(ImageWriter{ "output.tga" }, out_image);
+    write_image(out_image, "output.tga");
 
     return 0;
 }

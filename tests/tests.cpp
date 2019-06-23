@@ -12,7 +12,7 @@ SCENARIO("Bounding box calculation", "[renderer]")
         WHEN("calculating bounding box")
         {
             auto [bbmin, bbmax] =
-                calculate_bounding_box(triangle, {1920, 1080});
+                calculate_bounding_box(triangle, 1920, 1080);
             THEN("bounding box should consist furthest triangle coordinates")
             {
                 REQUIRE(bbmin == vec2f{10.f, 20.f});
@@ -27,7 +27,7 @@ SCENARIO("Bounding box calculation", "[renderer]")
         WHEN("calculating bounding box")
         {
             auto [bbmin, bbmax] =
-                calculate_bounding_box(triangle, {1920, 1080});
+                calculate_bounding_box(triangle, 1920, 1080);
             THEN("bounding box should be clamped to screen resolution")
             {
                 REQUIRE(bbmin == vec2f{0.f, 0.f});
@@ -42,7 +42,7 @@ SCENARIO("Bounding box calculation", "[renderer]")
         WHEN("calculating bounding box")
         {
             auto [bbmin, bbmax] =
-                calculate_bounding_box(triangle, {1920, 1080});
+                calculate_bounding_box(triangle, 1920, 1080);
             THEN("bounding box should be zeroed")
             {
                 REQUIRE(bbmin == vec2f{0.f, 0.f});
@@ -57,7 +57,7 @@ SCENARIO("Bounding box calculation", "[renderer]")
         WHEN("calculating bounding box")
         {
             auto [bbmin, bbmax] =
-                calculate_bounding_box(triangle, {1920, 1080});
+                calculate_bounding_box(triangle, 1920, 1080);
             THEN("bounding box should be fullscreen (max is -1)")
             {
                 REQUIRE(bbmin == vec{0.f, 0.f});
