@@ -20,6 +20,7 @@ void TgaImage::ReadImage(const std::filesystem::path& path_to_img)
 
 void TgaImage::WriteImage(const std::filesystem::path& path_to_write)
 {
+    m_image.flip_vertically();
     if(!m_image.write_tga_file(path_to_write.string().c_str()))
         throw std::runtime_error("Couldn't save file");
 }

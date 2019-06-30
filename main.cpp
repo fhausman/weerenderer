@@ -1,6 +1,6 @@
 #include "renderer.hpp"
 #include "img.hpp"
-#include "img/tgaimage.h"
+#include "tgaimpl.hpp"
 #include "tinyobjloader/tiny_obj_loader.h"
 #include "hola/hola.hpp"
 
@@ -8,10 +8,16 @@
 
 using namespace hola;
 
+using ImgPtr = std::unique_ptr<IImg>;
+using ColorPtr = std::unique_ptr<IColor>;
+
 int main(int argc, const char* argv[])
 {
-    Image out_image = TGAImage{ 1600, 1600, TGAImage::RGB };
-    Image texture = read_image("african_head_diffuse.tga");
+    ImgPtr out_image = std::make_unique<TgaImage>();
+    out_image->CreateImage(1600, 1600);
+
+    ImgPtr texture = std::make_unique<TgaImage>();
+    texture->ReadImage("african_head_diffuse.tga");
 
     auto objreader = tinyobj::ObjReader{};
     objreader.ParseFromFile("head.obj");
@@ -38,7 +44,7 @@ int main(int argc, const char* argv[])
         return vec2f{ tex_coords[start_idx], tex_coords[start_idx + 1]};
     };
 
-    const auto[width, height] = get_image_size(out_image);
+    const auto[width, height] = out_image->GetImageSize();
     const auto triangle_to_screen_coords =
         [width, height](const auto&... v) -> Triangle {
         const auto calc_img_coord = [](const auto obj_coord, const auto image_dimension) {
@@ -84,12 +90,12 @@ int main(int argc, const char* argv[])
         if (intensity > 0)
         {
             draw_triangle(triangle_to_screen_coords(v0, v1, v2),
-                {t0, t1, t2}, intensity, z_buffer, out_image, texture);
+                {t0, t1, t2}, intensity, z_buffer, *out_image, *texture);
         }
         indices_idx += face_size;
     }
 
-    write_image(out_image, "output.tga");
+    out_image->WriteImage("output.tga");
 
     return 0;
 }

@@ -5,7 +5,6 @@
 #include <vector>
 #include "img.hpp"
 #include "hola/hola.hpp"
-#include "img/tgaimage.h"
 
 using namespace hola;
 
@@ -24,6 +23,6 @@ BoundingBox calculate_bounding_box(const Triangle& triangle, const Width width, 
 
 std::optional<vec3f> calculate_barycentric(const Point& p, const Triangle& triangle);
 
-void draw_line(const vec2i& v0, const vec2i& v1, Image& image, const Color& color);
+void draw_line(const vec2i& v0, const vec2i& v1, IImg& image, const IColor& color);
 
-void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, ZBuffer& z_buffer, Image& image, Image& texture);
+void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, ZBuffer& z_buffer, IImg& image, IImg& texture);

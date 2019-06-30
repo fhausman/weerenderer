@@ -36,7 +36,7 @@ std::optional<vec3f> calculate_barycentric(const Point& p, const Triangle& trian
 }
 
 
-void draw_line(const vec2i& v0, const vec2i& v1, Image& image, const Color& color)
+void draw_line(const vec2i& v0, const vec2i& v1, IImg& image, const IColor& color)
 {
     const auto dx = std::abs(get_x(v1) - get_x(v0));
     const auto dy = std::abs(get_y(v1) - get_y(v0));
@@ -55,7 +55,7 @@ void draw_line(const vec2i& v0, const vec2i& v1, Image& image, const Color& colo
     {
         const auto px_x = calculate_next_pixel(get_x(v0), dx * xi, step);
         const auto px_y = calculate_next_pixel(get_y(v0), dy * yi, step);
-        set_pixel(image, px_x, px_y, 1.0f, color);
+        image.SetPixelColor(px_x, px_y, 1.0f, color);
     }
 }
 
@@ -66,9 +66,9 @@ bool is_inside_triangle(const vec3f& barycentric)
         get_z(barycentric) < 0.f);
 }
 
-Color get_color(const vec3f& barycentric, const TexCoords& texture_coords, Image& texture)
+std::unique_ptr<IColor> get_color(const vec3f& barycentric, const TexCoords& texture_coords, const IImg& texture)
 {
-    const auto [width, height] = get_image_size(texture);
+    const auto [width, height] = texture.GetImageSize();
     const auto p_uv =
         texture_coords[0]*barycentric[0] +
         texture_coords[1]*barycentric[1] +
@@ -76,12 +76,12 @@ Color get_color(const vec3f& barycentric, const TexCoords& texture_coords, Image
 
     const int tex_x = static_cast<int>(width - get_x(p_uv)*width);
     const int tex_y = static_cast<int>(height - get_y(p_uv)*height);
-    return get_pixel(texture, tex_x, tex_y);
+    return texture.GetPixelColor(tex_x, tex_y);
 }
 
-void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, ZBuffer& z_buffer, Image& image, Image& texture)
+void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, ZBuffer& z_buffer, IImg& image, IImg& texture)
 {
-    const auto[width, height] = get_image_size(image);
+    const auto[width, height] = image.GetImageSize();
     const auto buffer_idx = [&](const auto& x, const auto& y) {
         return size_t(x + y * width);
     };
@@ -105,11 +105,11 @@ void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, co
                 if(z_buffer[buffer_idx(x,y)] < z)
                 {
                     z_buffer[buffer_idx(x,y)] = z;
-                    set_pixel(image,
+                    image.SetPixelColor(
                         static_cast<int32_t>(x),
                         static_cast<int32_t>(y),
                         intensity,
-                        get_color(*barycentric, texture_coords, texture));
+                        *get_color(*barycentric, texture_coords, texture));
                 }
             }
         }
