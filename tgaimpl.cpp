@@ -25,7 +25,7 @@ void TgaImage::WriteImage(const std::filesystem::path& path_to_write)
         throw std::runtime_error("Couldn't save file");
 }
 
-std::tuple<Width, Height> TgaImage::GetImageSize() const
+ImageSize TgaImage::GetImageSize() const
 {
     return { m_image.get_width(), m_image.get_height() };
 }

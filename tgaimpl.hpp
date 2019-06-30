@@ -23,7 +23,7 @@ public:
     virtual void CreateImage(const Width width, const Height height) override;
     virtual void ReadImage(const std::filesystem::path& path_to_img) override;
     virtual void WriteImage(const std::filesystem::path& path_to_write) override;
-    virtual std::tuple<Width, Height> GetImageSize() const override;
+    virtual ImageSize GetImageSize() const override;
     virtual std::unique_ptr<IColor> GetPixelColor(const int32_t x, const int32_t y) const override;
     virtual void SetPixelColor(const int32_t x, const int32_t y, const float_t intensity, const IColor& color) override;
 };

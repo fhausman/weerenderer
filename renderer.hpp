@@ -4,6 +4,7 @@
 #include <variant>
 #include <vector>
 #include "img.hpp"
+#include "model.hpp"
 #include "hola/hola.hpp"
 
 using namespace hola;
@@ -19,10 +20,22 @@ struct BoundingBox
     vec2f max;
 };
 
-BoundingBox calculate_bounding_box(const Triangle& triangle, const Width width, const Height height);
+class Renderer
+{
+    vec3f m_lightVector;
+    ZBuffer m_zBuffer;
 
-std::optional<vec3f> calculate_barycentric(const Point& p, const Triangle& triangle);
-
-void draw_line(const vec2i& v0, const vec2i& v1, IImg& image, const IColor& color);
-
-void draw_triangle(const Triangle& triangle, const TexCoords& texture_coords, const float_t intensity, ZBuffer& z_buffer, IImg& image, IImg& texture);
+    float_t CalculateLightIntensity(const Triangle& triangle);
+    BoundingBox CalculateBoundingBox(const Triangle& triangle, const ImageSize& size);
+    std::optional<vec3f> CalculateBarycentric(const Point& p, const Triangle& triangle);
+    std::unique_ptr<IColor> GetColorFromTexture(const vec3f& barycentric, const TexCoords& texture_coords, const IImg& texture);
+public:
+    void SetLightVector(const vec3f& light_vector) { m_lightVector = light_vector; }
+    void RenderModel(const IModel& model, IImg& texture, IImg& out_image);
+    void RenderLine(const vec2i& v0, const vec2i& v1, IImg& image, const IColor& color);
+    void RenderTriangle(const Triangle& triangle,
+        const TexCoords& texture_coords,
+        const float_t intensity,
+        IImg& out_image,
+        IImg& texture);
+};
