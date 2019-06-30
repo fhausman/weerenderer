@@ -4,7 +4,6 @@
 #include <tuple>
 #include <filesystem>
 
-//todo: would be perfect to change to strong types
 using Width = size_t;
 using Height = size_t;
 using ImageSize = std::tuple<Width, Height>;

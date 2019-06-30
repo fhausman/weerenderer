@@ -5,7 +5,7 @@ set(SOURCE_FILES
     main.cpp
     renderer.cpp
     tgaimpl.cpp
-	objimpl.cpp
+    objimpl.cpp
     img/tgaimage.cpp)
 
 set(HEADER_FILES
