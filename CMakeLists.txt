@@ -11,7 +11,7 @@ set(HEADER_FILES
     renderer.hpp
     img.hpp
     tgaimpl.hpp
-    obj.hpp
+    model.hpp
     img/tgaimage.h
     hola/hola.hpp)
 

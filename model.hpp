@@ -4,10 +4,12 @@
 #include <filesystem>
 #include <optional>
 
+using namespace hola;
+
 using Vertices = std::array<vec3f, 3>;
 using TextureCoords = std::array<vec2f, 3>;
 
-struct Polygon
+struct TriangulatePolygon
 {
     Vertices vertices;
     TextureCoords textureCoordinates;
@@ -15,7 +17,7 @@ struct Polygon
 
 class IShape
 {
-    virtual std::optional<Polygon> GetNextPolygon() = 0;
+    virtual std::optional<TriangulatePolygon> GetNextPolygon() = 0;
     virtual ~IShape() = default;
 };
 
