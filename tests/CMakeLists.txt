@@ -1,7 +1,7 @@
 project(renderer_tests)
 cmake_minimum_required(VERSION 3.1)
 
-set(SOURCE_FILES tests.cpp ../renderer.cpp ../img/tgaimage.cpp ../img.cpp)
+set(SOURCE_FILES tests.cpp ../renderer.cpp ../img/tgaimage.cpp)
 set(HEADER_FILES ../img/tgaimage.h ../img.hpp)
 
 add_executable(renderer_tests ${SOURCE_FILES} ${HEADER_FILES})
