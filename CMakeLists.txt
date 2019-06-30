@@ -4,13 +4,14 @@ cmake_minimum_required(VERSION 3.1)
 set(SOURCE_FILES
     main.cpp
     renderer.cpp
-	tgaimpl.cpp
+    tgaimpl.cpp
     img/tgaimage.cpp)
 
 set(HEADER_FILES
     renderer.hpp
-	img.hpp
-	tgaimpl.hpp
+    img.hpp
+    tgaimpl.hpp
+    obj.hpp
     img/tgaimage.h
     hola/hola.hpp)
 
