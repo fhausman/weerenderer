@@ -5,6 +5,7 @@ set(SOURCE_FILES
     main.cpp
     renderer.cpp
     tgaimpl.cpp
+	objimpl.cpp
     img/tgaimage.cpp)
 
 set(HEADER_FILES
@@ -12,6 +13,7 @@ set(HEADER_FILES
     img.hpp
     tgaimpl.hpp
     model.hpp
+    objimpl.hpp
     img/tgaimage.h
     hola/hola.hpp)
 
