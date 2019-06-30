@@ -53,7 +53,7 @@ std::optional<TriangulatePolygon> Shape::GetNextPolygon() const
         for (int i = 0; i < face_size; ++i)
         {
             polygon.vertices[i] = GetVertex(face[i].vertex_index);
-            polygon.textureCoordinates[i] = GetTextureCoord(face[0].texcoord_index);
+            polygon.textureCoordinates[i] = GetTextureCoord(face[i].texcoord_index);
         }
 
         ++current_face;

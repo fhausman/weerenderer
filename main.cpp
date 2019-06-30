@@ -1,7 +1,8 @@
 #include "renderer.hpp"
 #include "img.hpp"
 #include "tgaimpl.hpp"
-#include "tinyobjloader/tiny_obj_loader.h"
+#include "model.hpp"
+#include "objimpl.hpp"
 #include "hola/hola.hpp"
 
 #include <iostream>
@@ -10,6 +11,7 @@ using namespace hola;
 
 using ImgPtr = std::unique_ptr<IImg>;
 using ColorPtr = std::unique_ptr<IColor>;
+using ModelPtr = std::unique_ptr<IModel>;
 
 int main(int argc, const char* argv[])
 {
@@ -19,30 +21,8 @@ int main(int argc, const char* argv[])
     ImgPtr texture = std::make_unique<TgaImage>();
     texture->ReadImage("african_head_diffuse.tga");
 
-    auto objreader = tinyobj::ObjReader{};
-    objreader.ParseFromFile("head.obj");
-
-    if (!objreader.Valid())
-    {
-        std::cerr << "Invalid obj file, aborting...";
-        return -1;
-    }
-
-    const auto& head = objreader.GetShapes().front();
-    const auto& indices = head.mesh.indices;
-    const auto& face_vertices = head.mesh.num_face_vertices;
-    const auto& vertices = objreader.GetAttrib().vertices;
-    const auto& tex_coords = objreader.GetAttrib().texcoords;
-
-    const auto get_vertex = [&vertices](const auto idx) {
-        const auto start_idx = idx * 3;
-        return vec3f{ vertices[start_idx], vertices[start_idx + 1], vertices[start_idx + 2] };
-    };
-
-    const auto get_texcoords = [&tex_coords](const auto idx) {
-        const auto start_idx = idx * 2;
-        return vec2f{ tex_coords[start_idx], tex_coords[start_idx + 1]};
-    };
+    ModelPtr model = std::make_unique<Obj>();
+    model->ReadModel("head.obj");
 
     const auto[width, height] = out_image->GetImageSize();
     const auto triangle_to_screen_coords =
@@ -68,33 +48,21 @@ int main(int argc, const char* argv[])
 
     size_t indices_idx = 0;
     std::vector<float> z_buffer(width*height, -std::numeric_limits<float>::max());
-    for (size_t i = 0; i < face_vertices.size(); ++i)
+    while (const auto shape = model->GetNextShape())
     {
-        const auto face_size = face_vertices[i];
-        if (face_size != 3)
+        while (const auto& polygon = shape->GetNextPolygon())
         {
-            std::cerr << "Invalid obj file (face not triangle), aborting...";
-            return -1;
+            const auto& [v0, v1, v2] = polygon->vertices;
+            const auto& [t0, t1, t2] = polygon->textureCoordinates;
+
+            const auto intensity = light_intensity(v0, v1, v2);
+            if (intensity > 0)
+            {
+                draw_triangle(triangle_to_screen_coords(v0, v1, v2),
+                    { t0, t1, t2 }, intensity, z_buffer, *out_image, *texture);
+            }
         }
-
-        const auto face = indices.begin() + indices_idx;
-        const auto v0 = get_vertex(face[0].vertex_index);
-        const auto v1 = get_vertex(face[1].vertex_index);
-        const auto v2 = get_vertex(face[2].vertex_index);
-
-        const auto t0 = get_texcoords(face[0].texcoord_index);
-        const auto t1 = get_texcoords(face[1].texcoord_index);
-        const auto t2 = get_texcoords(face[2].texcoord_index);
-
-        const auto intensity = light_intensity(v0, v1, v2);
-        if (intensity > 0)
-        {
-            draw_triangle(triangle_to_screen_coords(v0, v1, v2),
-                {t0, t1, t2}, intensity, z_buffer, *out_image, *texture);
-        }
-        indices_idx += face_size;
     }
-
     out_image->WriteImage("output.tga");
 
     return 0;
