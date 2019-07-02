@@ -94,7 +94,6 @@ SCENARIO("Calculating point barycentric coordinates in relation to triangle", "[
         WHEN("P is inside triangle")
         {
             const Point p{ 30.f, 10.f };
-
             const auto bar = *renderer.CalculateBarycentric(p, triangle);
             THEN("all barycentric coords are positive")
             {
@@ -107,12 +106,21 @@ SCENARIO("Calculating point barycentric coordinates in relation to triangle", "[
         WHEN("P is outside triangle")
         {
             const Point p{ 100.f, 100.f };
-
             const auto bar = *renderer.CalculateBarycentric(p, triangle);
             THEN("at least one of barycentric coords is negative")
             {
                 REQUIRE((get_x(bar) < 0.f || get_y(bar) < 0.f || get_z(bar) < 0.f));
             }
+        }
+    }
+
+    GIVEN("degenerate triangle")
+    {
+        const Triangle triangle = { {{10.f,10.f}, {20.f,10.f}, {30.f,10.f}} };
+        THEN("calculating barycentric shouldn't return any value")
+        {
+            const auto bar = renderer.CalculateBarycentric({ 0.f, 0.f }, triangle);
+            REQUIRE(bar == std::nullopt);
         }
     }
 }
