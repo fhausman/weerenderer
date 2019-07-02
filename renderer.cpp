@@ -32,7 +32,7 @@ BoundingBox Renderer::CalculateBoundingBox(const Triangle& triangle, const Image
 
 std::optional<vec3f> Renderer::CalculateBarycentric(const Point& p, const Triangle& triangle)
 {
-    const auto is_degenerate = [](const auto& u) { return std::abs(get_z(u)) < 0; };
+    const auto is_degenerate = [](const auto& u) { return std::abs(get_z(u)) < 1.f; };
 
     const auto&[a, b, c] = triangle;
     const vec3f x_part = vec3f{ get_x(c) - get_x(a), get_x(b) - get_x(a), get_x(a) - get_x(p) };
