@@ -25,10 +25,6 @@ class Renderer
     vec3f m_lightVector;
     ZBuffer m_zBuffer;
 
-    float_t CalculateLightIntensity(const Triangle& triangle);
-    BoundingBox CalculateBoundingBox(const Triangle& triangle, const ImageSize& size);
-    std::optional<vec3f> CalculateBarycentric(const Point& p, const Triangle& triangle);
-    std::unique_ptr<IColor> GetColorFromTexture(const vec3f& barycentric, const TexCoords& texture_coords, const IImg& texture);
 public:
     void SetLightVector(const vec3f& light_vector) { m_lightVector = light_vector; }
     void RenderModel(const IModel& model, IImg& texture, IImg& out_image);
@@ -38,4 +34,10 @@ public:
         const float_t intensity,
         IImg& out_image,
         IImg& texture);
+    std::unique_ptr<IColor> GetColorFromTexture(const vec3f& barycentric,
+        const TexCoords& texture_coords,
+        const IImg& texture);
+    std::optional<vec3f> CalculateBarycentric(const Point& p, const Triangle& triangle);
+    BoundingBox CalculateBoundingBox(const Triangle& triangle, const ImageSize& size);
+    float_t CalculateLightIntensity(const Triangle& triangle);
 };
